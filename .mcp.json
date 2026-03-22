@@ -1,0 +1,9 @@
+
+{
+  "mcpServers": {
+    "pycompat": {
+      "command": "python",
+      "args": ["your_absolute_path/pycompat_mcp/server.py"]
+    }
+  }
+}
