@@ -1,9 +1,8 @@
-
 {
   "mcpServers": {
     "pycompat": {
-      "command": "python",
-      "args": ["your_absolute_path/pycompat_mcp/server.py"]
+      "type": "http",
+      "url": "http://localhost:8000/mcp"
     }
   }
 }

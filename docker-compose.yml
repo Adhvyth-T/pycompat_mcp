@@ -1,0 +1,16 @@
+services:
+  pycompat-mcp:
+    build: .
+    ports:
+      - "${PORT:-8000}:8000"
+    environment:
+      TRANSPORT: http
+      HOST: 0.0.0.0
+      PORT: 8000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
