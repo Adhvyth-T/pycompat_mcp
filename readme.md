@@ -2,7 +2,7 @@
 
 A Python MCP server that resolves, audits, and looks up PyPI package versions with full compatibility checking against a target Python runtime. Runs as a local stdio process or a remote HTTP API server.
 
-**Live endpoint:** `https://pycompat.duckdns.org/mcp`
+**Live endpoint:** `https://pycompat.duckdns.org/mcp` (availability may vary by region)
 
 ---
 
