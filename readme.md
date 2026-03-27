@@ -2,6 +2,57 @@
 
 A Python MCP server that resolves, audits, and looks up PyPI package versions with full compatibility checking against a target Python runtime. Runs as a local stdio process or a remote HTTP API server.
 
+**Live endpoint:** `https://pycompat.duckdns.org/mcp`
+
+---
+
+## Quick connect
+
+### Claude Code
+```bash
+claude mcp add --transport http pycompat https://pycompat.duckdns.org/mcp
+```
+
+### Claude Desktop
+```json
+{
+  "mcpServers": {
+    "pycompat": {
+      "command": "npx",
+      "args": ["-y", "mcp-remote", "https://pycompat.duckdns.org/mcp"]
+    }
+  }
+}
+```
+
+### LangChain / LangGraph
+```python
+from langchain_mcp_adapters.client import MultiServerMCPClient
+
+client = MultiServerMCPClient({
+    "pycompat": {
+        "url": "https://pycompat.duckdns.org/mcp",
+        "transport": "streamable_http",
+    }
+})
+tools = await client.get_tools()
+```
+
+### OpenAI / LiteLLM
+```python
+response = litellm.completion(
+    model="gpt-4o",
+    mcp_servers=[{"url": "https://pycompat.duckdns.org/mcp"}],
+    messages=[{"role": "user", "content": "Resolve fastapi and pydantic for Python 3.11"}]
+)
+```
+
+### Health check
+```bash
+curl https://pycompat.duckdns.org/health
+# → {"status": "ok", "server": "pycompat_mcp"}
+```
+
 ---
 
 ## Tools (4)
@@ -98,133 +149,54 @@ Faster than `pycompat_package_info` — one concurrent API call per package, ret
 
 ---
 
-## Transport modes
+## Self-hosting
+
+### Transport modes
 
 | `TRANSPORT` env var | Mode | Use case |
 |---|---|---|
 | `stdio` (default) | Local subprocess | Claude Desktop, Claude Code local |
 | `http` | Streamable HTTP API at `/mcp` | Any LLM client that speaks MCP-over-HTTP |
 
----
-
-## Installation
+### Installation
 
 ```bash
+git clone https://github.com/Adhvyth-T/pycompat_mcp.git
+cd pycompat_mcp
 pip install -r requirements.txt
 ```
 
-**`requirements.txt`:**
-```
-mcp[cli]>=1.26.0
-httpx>=0.28.1
-packaging>=26.0
-uvicorn>=0.42.0
-starlette>=0.52.1
-```
+### Running locally
 
----
-
-## Running
-
-### stdio (default)
+**stdio:**
 ```bash
 python server.py
 ```
 
-### HTTP mode
+**HTTP:**
 ```bash
 # Windows (PowerShell)
 $env:TRANSPORT="http"; python server.py
 
 # Linux / macOS
 TRANSPORT=http python server.py
-
-# Custom port
-TRANSPORT=http PORT=9000 python server.py
 ```
 
-Starts at:
-```
-MCP endpoint : http://0.0.0.0:8000/mcp
-Health check : http://0.0.0.0:8000/health
-```
-
-### Docker
+**Docker:**
 ```bash
 docker compose up --build
 ```
 
----
+### Connecting a local instance
 
-## Connecting LLM clients
-
-### Claude Code — stdio (local)
+**Claude Code — stdio:**
 ```bash
 claude mcp add pycompat python "/absolute/path/to/server.py"
 ```
 
-Or via `.mcp.json` in your project root:
-```json
-{
-  "mcpServers": {
-    "pycompat": {
-      "command": "python",
-      "args": ["/absolute/path/to/server.py"]
-    }
-  }
-}
-```
-
-### Claude Code — HTTP (remote)
+**Claude Code — HTTP:**
 ```bash
 claude mcp add --transport http pycompat http://localhost:8000/mcp
-```
-
-Or via `.mcp.json`:
-```json
-{
-  "mcpServers": {
-    "pycompat": {
-      "type": "http",
-      "url": "http://localhost:8000/mcp"
-    }
-  }
-}
-```
-
-### Claude Desktop — HTTP (via mcp-remote proxy)
-Claude Desktop speaks stdio only — use `mcp-remote` as a bridge:
-```json
-{
-  "mcpServers": {
-    "pycompat": {
-      "command": "npx",
-      "args": ["-y", "mcp-remote", "http://localhost:8000/mcp"]
-    }
-  }
-}
-```
-
-### LangChain / LangGraph
-```python
-from langchain_mcp_adapters.client import MultiServerMCPClient
-
-client = MultiServerMCPClient({
-    "pycompat": {
-        "url": "http://localhost:8000/mcp",
-        "transport": "streamable_http",
-    }
-})
-tools = await client.get_tools()
-```
-
-### OpenAI / LiteLLM
-```python
-response = litellm.completion(
-    model="gpt-4o",
-    mcp_servers=[{"url": "http://localhost:8000/mcp"}],
-    messages=[{"role": "user", "content": "Resolve fastapi and pydantic for Python 3.11"}]
-)
 ```
 
 ---
@@ -260,7 +232,7 @@ pycompat_mcp/
 
 ## Maintainer notes
 
-**When Python 3.14 ships (expected Oct 2025):**
+**When Python 3.14 ships:**
 In `models.py`, bump `VALID_PYTHON_MINORS["3"]` from `range(0, 14)` → `range(0, 15)`.
 Track: https://www.python.org/downloads/
 
